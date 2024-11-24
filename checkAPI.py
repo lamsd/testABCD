@@ -18,7 +18,7 @@ def download_image(url, save_path):
     except Exception as e:
         print(f"Error occurred: {e}")
 
-def capture_images(url, folder, interval, duration):
+def capture_images(url, folder, interval, duration, id):
     """
     Periodically capture and save images from a real-time URL.
 
