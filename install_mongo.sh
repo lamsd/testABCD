@@ -24,15 +24,14 @@ install_mongodb() {
     sudo apt update -y
     sudo apt install -y gnupg curl software-properties-common
     curl -fsSL https://www.mongodb.org/static/pgp/server-8.0.asc |  sudo gpg -o /usr/share/keyrings/mongodb-server-8.0.gpg  --dearmor
-    echo "deb [ arch=amd64,arm64 signed-by=/usr/share/keyrings/mongodb-server-8.0.gpg ] https://repo.mongodb.org/apt/ubuntu jammy/mongodb-org/8.0 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-8.0.list
-    sudo apt update -y
+    echo "deb [ arch=amd64,arm64 signed-by=/usr/share/keyrings/mongodb-server-8.0.gpg ] https://repo.mongodb.org/apt/ubuntu noble/mongodb-org/8.0 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-8.0.list    sudo apt update -y
     sudo apt install -y mongodb-org
 }
 
 # Function to configure MongoDB
 configure_mongodb() {
     echo "Configuring MongoDB to bind to all IPs..."
-    sudo sed -i "s/^  bindIp:.*/  bindIp: 0.0.0.0/" /etc/mongod.conf
+    sudo sed -i "s/^  bindIp:.*/  bindIp: 12.115.15.156/" /etc/mongod.conf
     echo "Enabling authentication..."
     if ! grep -q "authorization: enabled" /etc/mongod.conf; then
         sudo sed -i "/#security:/a\security:\n  authorization: enabled" /etc/mongod.conf
