@@ -6,7 +6,7 @@
 MONGO_USER="admin"
 MONGO_PASSWORD="admin123@"
 MONGO_DATABASE="km24_db"
-BIND_IP="0.0.0.0"  # Change to a specific IP for security, e.g., "192.168.1.100"
+BIND_IP="4.115.15.56"  # Change to a specific IP for security, e.g., "192.168.1.100"
 PORT="27017"
 
 # Function to install MongoDB
@@ -16,12 +16,12 @@ install_mongodb() {
     sudo apt install -y gnupg curl software-properties-common
 
     echo "Adding MongoDB repository..."
-    curl -fsSL https://pgp.mongodb.com/server-7.0.asc | sudo gpg --dearmor -o /usr/share/keyrings/mongodb-server-7.0.gpg
-    echo "deb [signed-by=/usr/share/keyrings/mongodb-server-7.0.gpg] https://repo.mongodb.org/apt/ubuntu $(lsb_release -cs)/mongodb-org/7.0 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-7.0.list
+    curl -fsSL https://www.mongodb.org/static/pgp/server-8.0.asc | sudo gpg -o /usr/share/keyrings/mongodb-server-8.0.gpg --dearmor
+    echo "deb [ arch=amd64,arm64 signed-by=/usr/share/keyrings/mongodb-server-8.0.gpg ] https://repo.mongodb.org/apt/ubuntu jammy/mongodb-org/8.0 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-8.0.list
 
     echo "Installing MongoDB..."
     sudo apt update -y
-    sudo apt install -y mongodb-org
+    sudo apt-get install -y mongodb-org=8.0.0 mongodb-org-database=8.0.0 mongodb-org-server=8.0.0 mongodb-mongosh mongodb-org-mongos=8.0.0 mongodb-org-tools=8.0.0
 }
 
 # Function to configure MongoDB
