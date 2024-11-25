@@ -1,43 +1,75 @@
 #!/bin/bash
 
-# Set MongoDB version
-MONGO_VERSION=7.0
+# Script to set up and run MongoDB 7.0
 
-# Update the package list
-echo "Updating package list..."
-sudo apt-get update -y
+# Function to check if MongoDB is already installed
+check_mongodb_installed() {
+    if command -v mongod >/dev/null 2>&1; then
+        echo "MongoDB is already installed."
+        return 0
+    else
+        return 1
+    fi
+}
 
-# Install gnupg to handle the MongoDB PGP key
-echo "Installing gnupg..."
-sudo apt-get install gnupg -y
+# Update system and install MongoDB
+install_mongodb() {
+    echo "Updating system packages..."
+    sudo apt update -y
 
-# Add MongoDB's official public GPG key
-echo "Adding MongoDB GPG key..."
-wget -qO - https://www.mongodb.org/static/pgp/server-${MONGO_VERSION}.asc | sudo apt-key add -
+    echo "Installing dependencies..."
+    sudo apt install -y gnupg curl software-properties-common
 
-# Create MongoDB repository list file for Ubuntu 22.04 (Jammy)
-echo "Creating MongoDB repository list..."
-cd /etc/apt/sources.list.d/
-sudo touch mongodb-org-${MONGO_VERSION}.list
-echo "deb [ arch=amd64,arm64 ] https://repo.mongodb.org/apt/ubuntu jammy/mongodb-org/${MONGO_VERSION} multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-${MONGO_VERSION}.list
+    echo "Adding MongoDB 7.0 official repository..."
+    curl -fsSL https://pgp.mongodb.com/server-7.0.asc | sudo gpg --dearmor -o /usr/share/keyrings/mongodb-server-7.0.gpg
+    echo "deb [signed-by=/usr/share/keyrings/mongodb-server-7.0.gpg] https://repo.mongodb.org/apt/ubuntu $(lsb_release -cs)/mongodb-org/7.0 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-7.0.list
 
-# Update the package list again after adding the MongoDB repository
-echo "Updating package list after adding MongoDB repository..."
-sudo apt-get update -y
+    echo "Updating package list..."
+    sudo apt update -y
 
-# Install MongoDB
-echo "Installing MongoDB ${MONGO_VERSION}..."
-sudo apt-get install -y mongodb-org
+    echo "Installing MongoDB 7.0..."
+    sudo apt install -y mongodb-org
+}
 
 # Start MongoDB service
-echo "Starting MongoDB service..."
-sudo systemctl start mongod
+start_mongodb() {
+    echo "Starting MongoDB service..."
+    sudo systemctl start mongod
 
-# Enable MongoDB to start on boot
-echo "Enabling MongoDB to start on boot..."
-sudo systemctl enable mongod
+    echo "Enabling MongoDB to start on boot..."
+    sudo systemctl enable mongod
+}
 
-# Verify if MongoDB is running
-echo "Verifying MongoDB installation..."
-sudo systemctl status mongod
+# Verify MongoDB status
+verify_mongodb() {
+    echo "Checking MongoDB status..."
+    if sudo systemctl status mongod | grep "active (running)" >/dev/null; then
+        echo "MongoDB 7.0 is running successfully!"
+    else
+        echo "MongoDB is not running. Please check logs for details."
+        exit 1
+    fi
+}
 
+# Main script logic
+main() {
+    echo "MongoDB 7.0 Setup Script"
+    echo "-------------------------"
+
+    # Check if MongoDB is installed
+    if ! check_mongodb_installed; then
+        echo "MongoDB is not installed. Proceeding with installation..."
+        install_mongodb
+    fi
+
+    # Start MongoDB
+    start_mongodb
+
+    # Verify MongoDB status
+    verify_mongodb
+
+    echo "MongoDB 7.0 setup and running completed!"
+}
+
+# Execute the main function
+main
