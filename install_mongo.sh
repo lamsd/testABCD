@@ -3,8 +3,8 @@
 # MongoDB Configuration Variables
 DOMAIN="tuanhoangdinh.ddns.net"  # Replace with your DDNS domain
 PORT="27017"                     # MongoDB default port
-MONGO_USER="admin"          # MongoDB username
-MONGO_PASSWORD="adminsuper123"       # MongoDB password
+MONGO_USER="admin"               # MongoDB username
+MONGO_PASSWORD="adminsuper123"   # MongoDB password
 MONGO_DATABASE="example_db"      # MongoDB database name
 
 # Function to resolve the domain to an IP address
@@ -23,15 +23,16 @@ install_mongodb() {
     echo "Installing MongoDB..."
     sudo apt update -y
     sudo apt install -y gnupg curl software-properties-common
-    curl -fsSL https://www.mongodb.org/static/pgp/server-8.0.asc |  sudo gpg -o /usr/share/keyrings/mongodb-server-8.0.gpg  --dearmor
-    echo "deb [ arch=amd64,arm64 signed-by=/usr/share/keyrings/mongodb-server-8.0.gpg ] https://repo.mongodb.org/apt/ubuntu noble/mongodb-org/8.0 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-8.0.list    sudo apt update -y
+    curl -fsSL https://www.mongodb.org/static/pgp/server-8.0.asc | sudo gpg -o /usr/share/keyrings/mongodb-server-8.0.gpg  --dearmor
+    echo "deb [ arch=amd64,arm64 signed-by=/usr/share/keyrings/mongodb-server-8.0.gpg ] https://repo.mongodb.org/apt/ubuntu focal/mongodb-org/8.0 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-8.0.list
+    sudo apt update -y
     sudo apt install -y mongodb-org
 }
 
 # Function to configure MongoDB
 configure_mongodb() {
     echo "Configuring MongoDB to bind to all IPs..."
-    sudo sed -i "s/^  bindIp:.*/  bindIp: 12.115.15.156/" /etc/mongod.conf
+    sudo sed -i "s/^  bindIp:.*/  bindIp: 0.0.0.0/" /etc/mongod.conf
     echo "Enabling authentication..."
     if ! grep -q "authorization: enabled" /etc/mongod.conf; then
         sudo sed -i "/#security:/a\security:\n  authorization: enabled" /etc/mongod.conf
@@ -43,7 +44,7 @@ configure_mongodb() {
 # Function to create a MongoDB user
 create_mongodb_user() {
     echo "Creating MongoDB user..."
-    mongo <<EOF
+    mongosh --host $DOMAIN --port $PORT -u $MONGO_USER -p $MONGO_PASSWORD --authenticationDatabase "admin" <<EOF
 use $MONGO_DATABASE
 db.createUser({
   user: "$MONGO_USER",
@@ -100,7 +101,7 @@ main() {
 
     echo "--------------------------------------------"
     echo "MongoDB is successfully published!"
-    echo "Connection URI: mongodb://$MONGO_USER:$MONGO_PASSWORD@$DOMAIN:$PORT/$MONGO_DATABASE"
+    echo "Connection URI: mongosh mongodb://$MONGO_USER:$MONGO_PASSWORD@$DOMAIN:$PORT/$MONGO_DATABASE"
 }
 
 # Execute the main function
